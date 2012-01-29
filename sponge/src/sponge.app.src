@@ -1,0 +1,13 @@
+{application, sponge,
+ [
+  {description, "An app collecting data from chrome extensions via websockets"},
+  {vsn, "1"},
+  {registered, []},
+  {applications, [
+                  kernel,
+                  stdlib,
+                  cowboy
+                 ]},
+  {mod, { sponge, []}},
+  {env, []}
+ ]}.

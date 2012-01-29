@@ -1,0 +1,9 @@
+{
+  "name": "Tabs spy",
+  "version": "1.0",
+  "description": "A spy sending the tabs events to a server for data collection and mining.",
+  "background_page": "background.html",
+  "permissions": [
+    "tabs"
+  ]
+}
