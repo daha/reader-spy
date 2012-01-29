@@ -5,6 +5,8 @@
 %%%
 %%% @end
 %%%-------------------------------------------------------------------
+%%% @todo Store the events on disk (disklog?)
+%%% @todo use the ip and the request as file-name
 
 -module(websocket_handler).
 
@@ -33,7 +35,7 @@ websocket_init(_Any, Req, []) ->
 websocket_handle({text, Json}, Req, State) ->
     Proplist = [{binary_to_atom(K, utf8), V} ||
                    {K, V} <- tuple_to_list(jsonerl:decode(Json))],
-    io:format("Json=~p prolist=~p~n", [Json, Proplist]),
+    io:format("Json=~p~nprolist=~p~n", [Json, Proplist]),
     {ok, Req, State};
 websocket_handle(_Any, Req, State) ->
     {ok, Req, State}.
