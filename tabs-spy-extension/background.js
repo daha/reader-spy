@@ -3,7 +3,7 @@
 //       * Notify the user?
 // TODO: make the port configurable
 
-(function() {
+(function () {
     var ws, connected = false, queue = [], backoff = 1000;
 
     function setupWebsocket() {
@@ -13,12 +13,12 @@
             backoff = 1000;
             connected = true;
             ws.send(JSON.stringify({"hello": "world"}));
-            queue.forEach(function(event) {
+            queue.forEach(function (event) {
                 ws.send(JSON.stringify(event));
             });
             queue = [];
         };
-        ws.onclose = function() {
+        ws.onclose = function () {
             connected = false;
             console.log("connection to WebSocket closed! " +
                         "trying again in " + backoff + " seconds.");
@@ -27,7 +27,7 @@
                 backoff *= 2;
             }
         };
-        ws.onmessage = function(evt) {
+        ws.onmessage = function (evt) {
             console.log(evt);
         };
     }
@@ -53,7 +53,7 @@
     }
 
     function addEventByTabId(eventType, tabId) {
-        chrome.tabs.get(tabId, function(tab) {
+        chrome.tabs.get(tabId, function (tab) {
             addEventForTab(eventType, tab);
         });
     }
@@ -61,49 +61,49 @@
     setupWebsocket();
 
     chrome.windows.getAll(null, function (windows) {
-        for (i in windows) {
-            chrome.tabs.getAllInWindow(windows[i].id, function (tabs) {
+        windows.forEach(function (window) {
+            chrome.tabs.getAllInWindow(window.id, function (tabs) {
                 tabs.forEach(function (tab) {
                     console.log("all windows tab");
                     console.log(tab);
                     addEventForTab("startup", tab);
                 });
             });
-        }
+        });
     });
 
-    chrome.tabs.onCreated.addListener(function(tab) {
+    chrome.tabs.onCreated.addListener(function (tab) {
         addEventForTab("created", tab);
     });
 
-    chrome.tabs.onRemoved.addListener(function(tabId) {
+    chrome.tabs.onRemoved.addListener(function (tabId) {
         // TODO: the tab is no longer valid, need to cache the data or
         //       use the tabId in the events instead.
         addEventByTabId("removed", tabId);
     });
 
-    chrome.tabs.onActiveChanged.addListener(function(tabId, selectInfo) {
+    chrome.tabs.onActiveChanged.addListener(function (tabId, selectInfo) {
         addEventByTabId("activeChanged", tabId);
     });
 
-    chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
+    chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
         if (changeInfo.url) {
             addEventForTab("updated", tab);
         }
     });
 
-    chrome.windows.onFocusChanged.addListener(function(windowId) {
+    chrome.windows.onFocusChanged.addListener(function (windowId) {
+        var query, event;
         if (windowId !== -1) {
-            chrome.tabs.query({"active": true,
-                               "windowId": windowId},
-                              function (tabs) {
-                                  tabs.forEach(function(tab) {
-                                      addEventForTab("activeChanged", tab);
-                                  });
-                              });
+            query = {"active": true, "windowId": windowId};
+            chrome.tabs.query(query, function (tabs) {
+                tabs.forEach(function (tab) {
+                    addEventForTab("activeChanged", tab);
+                });
+            });
         } else {
-            var event = {"event": "unfocused",
-                         "time": new Date()};
+            event = {"event": "unfocused",
+                     "time": new Date()};
             addEvent(event);
         }
     });
