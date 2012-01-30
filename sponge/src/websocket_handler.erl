@@ -10,12 +10,18 @@
 
 -module(websocket_handler).
 
+-include_lib("cowboy/include/http.hrl").
+
 -behaviour(cowboy_http_handler).
 -behaviour(cowboy_http_websocket_handler).
 
 -export([init/3, handle/2, terminate/2]).
 -export([websocket_init/3, websocket_handle/3,
          websocket_info/3, websocket_terminate/3]).
+
+-record(state, {path="",
+                disklog
+               }).
 
 init({_Any, http}, _Req, []) ->
     %% assume 'Upgrade' is requested.
@@ -30,12 +36,25 @@ terminate(_Req, _State) ->
     ok.
 
 websocket_init(_Any, Req, []) ->
-    {ok, Req, undefined, hibernate}.
+    Path = Req#http_req.raw_path,
+    PathStr = string:strip(binary_to_list(Path), left, $/),
+    DiskLogOptions = [{name, Path},
+                      {file, PathStr},
+                      {size, infinity},
+                      {mode, read_write},
+                      {type, halt},
+                      {format, internal}],
+    Disklog = case disk_log:open(DiskLogOptions) of
+                  {ok, Disklog0} -> Disklog0;
+                  {repaired, Disklog0, _, _} -> Disklog0;
+                  {error, Error} -> erlang:error(Error)
+              end,
+    {ok, Req, #state{path = Path, disklog = Disklog}, hibernate}.
 
-websocket_handle({text, Json}, Req, State) ->
-    Proplist = [{binary_to_atom(K, utf8), V} ||
-                   {K, V} <- tuple_to_list(jsonerl:decode(Json))],
-    io:format("Json=~p~nprolist=~p~n", [Json, Proplist]),
+websocket_handle({text, JsonStr}, Req, State) ->
+    DecodedJson = jsonerl:decode(JsonStr),
+    ok = disk_log:log(State#state.disklog, DecodedJson),
+    io:format("~p~n", [JsonStr]),
     {ok, Req, State};
 websocket_handle(_Any, Req, State) ->
     {ok, Req, State}.
