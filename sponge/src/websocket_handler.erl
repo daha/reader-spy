@@ -38,8 +38,10 @@ terminate(_Req, _State) ->
 websocket_init(_Any, Req, []) ->
     Path = Req#http_req.raw_path,
     PathStr = string:strip(binary_to_list(Path), left, $/),
+    File = filename:join("data", PathStr),
+    filelib:ensure_dir(File),
     DiskLogOptions = [{name, Path},
-                      {file, PathStr},
+                      {file, File},
                       {size, infinity},
                       {mode, read_write},
                       {type, halt},
