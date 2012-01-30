@@ -45,17 +45,29 @@
 
     function addEventForTab(eventType, tab) {
         var event = {"event": eventType,
-                 "title": tab.title,
-                 "url": tab.url,
-                 "active": tab.active,
-                 "time": new Date()};
+                     "tabId": tab.id,
+                     "windowId": tab.windowId,
+                     "title": tab.title,
+                     "url": tab.url,
+                     "active": tab.active,
+                     "time": new Date()};
+        addEvent(event);
+    }
+
+    function addEventByTabAndWindowId(eventType, tabId, windowId) {
+        var event = {"event": eventType,
+                     "tabId": tabId,
+                     "time": new Date()
+                    };
+        if (windowId !== chrome.windows.WINDOW_ID_NONE) {
+            event.windowId = windowId;
+        }
         addEvent(event);
     }
 
     function addEventByTabId(eventType, tabId) {
-        chrome.tabs.get(tabId, function (tab) {
-            addEventForTab(eventType, tab);
-        });
+        addEventByTabAndWindowId(eventType, tabId,
+                                 chrome.windows.WINDOW_ID_NONE);
     }
 
     setupWebsocket();
@@ -77,13 +89,11 @@
     });
 
     chrome.tabs.onRemoved.addListener(function (tabId) {
-        // TODO: the tab is no longer valid, need to cache the data or
-        //       use the tabId in the events instead.
         addEventByTabId("removed", tabId);
     });
 
     chrome.tabs.onActiveChanged.addListener(function (tabId, selectInfo) {
-        addEventByTabId("activeChanged", tabId);
+        addEventByTabAndWindowId("activeChanged", tabId, selectInfo.windowId);
     });
 
     chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
@@ -103,6 +113,7 @@
             });
         } else {
             event = {"event": "unfocused",
+                     "windowId": windowId,
                      "time": new Date()};
             addEvent(event);
         }
