@@ -33,12 +33,8 @@
     }
     function addEvent(event) {
         if (connected) {
-            console.log("sending");
-            console.log(event);
             ws.send(JSON.stringify(event));
         } else {
-            console.log("storing");
-            console.log(event);
             queue.push(event);
         }
     }
@@ -76,8 +72,6 @@
         windows.forEach(function (window) {
             chrome.tabs.getAllInWindow(window.id, function (tabs) {
                 tabs.forEach(function (tab) {
-                    console.log("all windows tab");
-                    console.log(tab);
                     addEventForTab("startup", tab);
                 });
             });
