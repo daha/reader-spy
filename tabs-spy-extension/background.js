@@ -21,7 +21,8 @@
         ws.onclose = function () {
             connected = false;
             console.log("connection to WebSocket closed! " +
-                        "trying again in " + backoff + " seconds.");
+                        "trying again in " + Math.trunc(backoff / 1000) +
+                        " seconds.");
             setTimeout(setupWebsocket, backoff);
             if (backoff < 180000) {
                 backoff *= 2;
