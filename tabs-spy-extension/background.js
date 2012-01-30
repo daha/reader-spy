@@ -12,7 +12,6 @@
             console.log("Connected!");
             backoff = 1000;
             connected = true;
-            ws.send(JSON.stringify({"hello": "world"}));
             queue.forEach(function (event) {
                 ws.send(JSON.stringify(event));
             });
