@@ -44,7 +44,7 @@ websocket_init(_Any, Req, []) ->
 
 websocket_handle({text, JsonStr}, Req, State) ->
     io:format("~p~n", [JsonStr]),
-    ok = file:write(State#state.io_device, JsonStr),
+    ok = file:write(State#state.io_device, [JsonStr, "\n"] ),
     {ok, Req, State};
 websocket_handle(_Any, Req, State) ->
     {ok, Req, State}.
