@@ -19,8 +19,7 @@
 -export([websocket_init/3, websocket_handle/3,
          websocket_info/3, websocket_terminate/3]).
 
--record(state, {path="",
-                disklog
+-record(state, {io_device
                }).
 
 init({_Any, http}, _Req, []) ->
@@ -36,27 +35,16 @@ terminate(_Req, _State) ->
     ok.
 
 websocket_init(_Any, Req, []) ->
-    Path = Req#http_req.raw_path,
-    PathStr = string:strip(binary_to_list(Path), left, $/),
-    File = filename:join("data", PathStr),
+    ReqPath = Req#http_req.raw_path,
+    File = get_filename(ReqPath),
     filelib:ensure_dir(File),
-    DiskLogOptions = [{name, Path},
-                      {file, File},
-                      {size, infinity},
-                      {mode, read_write},
-                      {type, halt},
-                      {format, internal}],
-    Disklog = case disk_log:open(DiskLogOptions) of
-                  {ok, Disklog0} -> Disklog0;
-                  {repaired, Disklog0, _, _} -> Disklog0;
-                  {error, Error} -> erlang:error(Error)
-              end,
-    {ok, Req, #state{path = Path, disklog = Disklog}, hibernate}.
+    FileOptions = [write, raw],
+    {ok, IoDevice} = file:open(File, FileOptions),
+    {ok, Req, #state{io_device = IoDevice}, hibernate}.
 
 websocket_handle({text, JsonStr}, Req, State) ->
-    DecodedJson = jsonerl:decode(JsonStr),
-    ok = disk_log:log(State#state.disklog, DecodedJson),
     io:format("~p~n", [JsonStr]),
+    ok = file:write(State#state.io_device, JsonStr),
     {ok, Req, State};
 websocket_handle(_Any, Req, State) ->
     {ok, Req, State}.
@@ -66,3 +54,15 @@ websocket_info(_Info, Req, State) ->
 
 websocket_terminate(_Reason, _Req, _State) ->
     ok.
+
+get_filename(ReqPath) ->
+    ReqPathStr = string:strip(binary_to_list(ReqPath), left, $/),
+    {ok, Hostname} = inet:gethostname(),
+    File = string:join([Hostname, ReqPathStr, timestamp_to_string()], "-"),
+    filename:join("data", File).
+
+timestamp_to_string() ->
+    {{Year, Month, Day}, {Hour, Min, Sec}} = erlang:universaltime(),
+    lists:flatten(io_lib:format(
+                    "~4.10.0B-~2.10.0B-~2.10.0BT~2.10.0B:~2.10.0B:~2.10.0BZ",
+                    [Year, Month, Day, Hour, Min, Sec])).
