@@ -23,7 +23,7 @@ start() ->
 
 start(_Type, _Args) ->
     Dispatch = [{'_', [{'_', websocket_handler, []}]}],
-    cowboy:start_listener(my_http_listener, 100,
+    cowboy:start_listener(my_http_listener, 5,
                           cowboy_tcp_transport, [{port, 8765}],
                           cowboy_http_protocol, [{dispatch, Dispatch}]
                          ).
