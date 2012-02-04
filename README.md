@@ -5,22 +5,24 @@ blogs/feeds/webpages I read and watch. It is not intended to spy on
 anyone else, just to record data on me for myself.
 
 Some of my goals are to:
-* learn about my reading patterns.
-* rank all my RSS feeds, I have hundreds!
-* build a classifier to recommend new posts which might be of
-  interest to me and give me that feedback in Google Reader.
-* make it possible to trace back how I got to a certain page.
+
+*  learn about my reading patterns.
+*  rank all my RSS feeds, I have hundreds!
+*  build a classifier to recommend new posts which might be of
+   interest to me and give me that feedback in Google Reader.
+*  make it possible to trace back how I got to a certain page.
 
 Getting started
 ===============
-1. Compile and start sponge (the data collection server).
+* Compile and start sponge (the data collection server).
+
 ```
 cd sponge
 rebar get-deps compile
 ./sponge.sh start
 # The events are logged to the data directory in sponge.
 ```
-2. Install the tab spy extension in Chrome
+* Install the tab spy extension in Chrome
   1. Open extensions, **Tools > Extensions**.
   2. Activate **developer mode**, if not already activated.
   3. Click the **Load uppacked extension** button.
