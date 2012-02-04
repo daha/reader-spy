@@ -1,10 +1,26 @@
 // TODO: handle that the websocket goes down
-//       * store events in LocalStorage?
 //       * Notify the user?
 // TODO: make the port configurable
 
 (function () {
-    var ws, connected = false, queue = [], backoff = 1000;
+    var ws, connected = false, backoff = 1000;
+
+    if (!localStorage.queue) {
+        localStorage.queue = JSON.stringify([]);
+    }
+
+    function addToQueue(event) {
+        var queue = JSON.parse(localStorage.queue);
+        queue.push(event);
+        localStorage.queue = JSON.stringify(queue);
+    }
+
+    // TODO: now it is possible to lose events, fixit
+    function emptyQueue(callback) {
+        var queue = JSON.parse(localStorage.queue);
+        queue.forEach(callback);
+        localStorage.queue = JSON.stringify([]);
+    }
 
     function setupWebsocket() {
         ws = new WebSocket("ws://localhost:8765/tabs");
@@ -12,10 +28,9 @@
             console.log("Connected!");
             backoff = 1000;
             connected = true;
-            queue.forEach(function (event) {
+            emptyQueue(function (event) {
                 ws.send(JSON.stringify(event));
             });
-            queue = [];
         };
         ws.onclose = function () {
             connected = false;
@@ -31,11 +46,12 @@
             console.log(evt);
         };
     }
+
     function addEvent(event) {
         if (connected) {
             ws.send(JSON.stringify(event));
         } else {
-            queue.push(event);
+            addToQueue(event);
         }
     }
 
@@ -113,7 +129,7 @@
         }
     });
 
-    chrome.browserAction.onClicked.addListener(function(tab) {
+    chrome.browserAction.onClicked.addListener(function (tab) {
         addEventForTab("watched", tab);
     });
 }());
