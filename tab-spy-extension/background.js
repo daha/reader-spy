@@ -1,7 +1,3 @@
-// TODO: handle that the websocket goes down
-//       * Notify the user?
-// TODO: Do not track data in incognito-mode
-
 (function () {
     var ws, connected = false, backoff = 1000;
 
@@ -16,6 +12,9 @@
     function addToQueue(event) {
         var queue = JSON.parse(localStorage.queue);
         queue.push(event);
+        chrome.browserAction.setBadgeText(
+            {"text":
+             queue.length < 10000 ? queue.length.toString() : "9999"});
         localStorage.queue = JSON.stringify(queue);
     }
 
@@ -23,6 +22,7 @@
     function emptyQueue(callback) {
         var queue = JSON.parse(localStorage.queue);
         queue.forEach(callback);
+        chrome.browserAction.setBadgeText({"text": ""});
         localStorage.queue = JSON.stringify([]);
     }
 
