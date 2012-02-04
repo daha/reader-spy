@@ -1,12 +1,12 @@
 #!/bin/sh
 script_dirname=`dirname $0`
 script_dir=`(cd $script_dirname; pwd)`
-host=`hostname | cut -d'.' -f1`
+filehost=`hostname | cut -d'.' -f1`
 
 cd $script_dir
 
 nodename=sponge_default
-host="127.0.0.1"
+erlhost="127.0.0.1"
 command="start"
 
 is_started() {
@@ -16,12 +16,12 @@ is_started() {
 
 start() {
     if ! is_started; then
-        find data -name $host-\* -size 0 -delete
-        gzip -q data/$host-*
-        exec erl -name "$nodename@$host" \
+        find data -name $filehost-\* -size 0 -delete
+        gzip -q data/$filehost-*
+        exec erl -name "$nodename@$erlhost" \
             -noshell -noinput -detached \
             -pa ebin -pa deps/*/ebin \
-            -boot start_sasl -s sponge start_permanent
+            -boot start_sasl -s sponge
     else
         echo "Error: $nodename is already started!" >&2
         exit 1
@@ -30,11 +30,11 @@ start() {
 
 stop() {
     if is_started; then
-        stopper_node="${nodename}_stopper@$host"
+        stopper_node="${nodename}_stopper@$erlhost"
         exec erl -name "$stopper_node" -noshell -noinput \
             -sasl errlog_type error \
             -pa ebin -pa deps/*/ebin \
-            -boot start_sasl -s sponge stop "$nodename@$host" -s erlang halt
+            -boot start_sasl -s sponge stop "$nodename@$erlhost" -s erlang halt
     else
         echo "Error: $nodename is not started!" >&2
         exit 1
@@ -59,6 +59,10 @@ if [ $# -gt 0 ]; then
             ;;
         status)
             command="status"
+            ;;
+        *)
+            echo "Error: invalid command $1." >&2
+            exit 1
             ;;
     esac
 fi
