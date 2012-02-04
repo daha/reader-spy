@@ -1,7 +1,7 @@
 {
   "name": "Tab spy",
   "version": "1.0",
-  "description": "A spy sending the tabs events to a server for data collection and mining.",
+  "description": "A spy sending the tab events to a server for data collection and mining.",
   "icons": {"128": "images/icon-128.png"},
    "browser_action": {
     "default_icon": "images/icon-19.png",
