@@ -1,12 +1,16 @@
 // TODO: handle that the websocket goes down
 //       * Notify the user?
-// TODO: make the port configurable
+// TODO: Do not track data in incognito-mode
 
 (function () {
     var ws, connected = false, backoff = 1000;
 
     if (!localStorage.queue) {
         localStorage.queue = JSON.stringify([]);
+    }
+
+    if (!localStorage.client_id) {
+        localStorage.client_id = (new Date()).getTime().toString();
     }
 
     function addToQueue(event) {
@@ -57,6 +61,7 @@
 
     function addEventForTab(eventType, tab) {
         var event = {"event": eventType,
+                     "client_id": localStorage.client_id,
                      "tabId": tab.id,
                      "windowId": tab.windowId,
                      "title": tab.title,
@@ -68,6 +73,7 @@
 
     function addEventByTabAndWindowId(eventType, tabId, windowId) {
         var event = {"event": eventType,
+                     "client_id": localStorage.client_id,
                      "tabId": tabId,
                      "time": new Date()
                     };
@@ -123,6 +129,7 @@
             });
         } else {
             event = {"event": "unfocused",
+                     "client_id": localStorage.client_id,
                      "windowId": windowId,
                      "time": new Date()};
             addEvent(event);
