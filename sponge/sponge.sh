@@ -5,10 +5,6 @@ host=`hostname | cut -d'.' -f1`
 
 cd $script_dir
 
-find data -name $host-\* -size 0 -delete
-gzip -q data/$host-*
-
-
 nodename=sponge_default
 host="127.0.0.1"
 command="start"
@@ -20,6 +16,8 @@ is_started() {
 
 start() {
     if ! is_started; then
+        find data -name $host-\* -size 0 -delete
+        gzip -q data/$host-*
         exec erl -name "$nodename@$host" \
             -noshell -noinput -detached \
             -pa ebin -pa deps/*/ebin \
