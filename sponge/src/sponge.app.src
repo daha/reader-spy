@@ -8,6 +8,5 @@
                   stdlib,
                   cowboy
                  ]},
-  {mod, { sponge_app, []}},
   {env, []}
  ]}.

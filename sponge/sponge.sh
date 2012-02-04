@@ -1,4 +1,5 @@
 #!/bin/sh
+# TODO: configure sasl to write the data to some file under /tmp
 script_dirname=`dirname $0`
 script_dir=`(cd $script_dirname; pwd)`
 filehost=`hostname | cut -d'.' -f1`
@@ -14,14 +15,31 @@ is_started() {
     return $?
 }
 
+compress_data() {
+    find data -name $filehost-\* -size 0 -delete
+    gzip -q data/$filehost-*
+}
+
 start() {
     if ! is_started; then
-        find data -name $filehost-\* -size 0 -delete
-        gzip -q data/$filehost-*
+        compress_data
         exec erl -name "$nodename@$erlhost" \
             -noshell -noinput -detached \
             -pa ebin -pa deps/*/ebin \
             -boot start_sasl -s sponge
+    else
+        echo "Error: $nodename is already started!" >&2
+        exit 1
+    fi
+}
+
+start_interactive() {
+    if ! is_started; then
+        compress_data
+        exec erl -name "$nodename@$erlhost" \
+            -pa ebin -pa deps/*/ebin \
+            -boot start_sasl
+            -eval 'io:format("Type sponge:start(). to start.~n").'
     else
         echo "Error: $nodename is already started!" >&2
         exit 1
@@ -51,14 +69,11 @@ status() {
 
 if [ $# -gt 0 ]; then
     case "$1" in
-        stop)
-            command="stop"
+        start|stop|status)
+            command=$1
             ;;
-        start)
-            command="start"
-            ;;
-        status)
-            command="status"
+        start-interactive)
+            command="start_interactive"
             ;;
         *)
             echo "Error: invalid command $1." >&2
