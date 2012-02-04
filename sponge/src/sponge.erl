@@ -6,34 +6,32 @@
 %%% @end
 %%%-------------------------------------------------------------------
 -module(sponge).
--behaviour(application).
 
 %% API
 -export([start/0]).
--export([start/2, stop/1]).
+-export([start_permanent/0]).
+
+-export([stop/1]).
 
 %%%===================================================================
 %%% API
 %%%===================================================================
 
+start_permanent() ->
+    start(permanent).
+
 start() ->
-    application:start(cowboy),
-    application:start(sponge).
+    start(transient).
 
+start(Type) ->
+    application:start(cowboy, Type),
+    application:start(sponge, Type).
 
-start(_Type, _Args) ->
-    Dispatch = [{'_', [{'_', websocket_handler, []}]}],
-    cowboy:start_listener(my_http_listener, 5,
-                          cowboy_tcp_transport, [{port, 8765}],
-                          cowboy_http_protocol, [{dispatch, Dispatch}]
-                         ).
-    % TODO: move cowboy in under a supervisor
-    % sponge_sup:start_link().
-
-stop(_State) ->
-    ok.
-
-
-%%%===================================================================
-%%% Internal functions
-%%%===================================================================
+stop([OtherNode]) ->
+    case net_adm:ping(OtherNode) of
+        pong ->
+            rpc:call(OtherNode, init, stop, []);
+        pang ->
+            io:format("There is no node named ~p~n", [OtherNode])
+    end,
+    init:stop().

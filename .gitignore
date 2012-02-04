@@ -4,3 +4,4 @@ TAGS
 deps/
 ebin/
 data/
+erl_crash.dump
