@@ -112,4 +112,8 @@
             addEvent(event);
         }
     });
+
+    chrome.browserAction.onClicked.addListener(function(tab) {
+        addEventForTab("watched", tab);
+    });
 }());
