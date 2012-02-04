@@ -62,5 +62,6 @@ timestamp_to_string() ->
     {{Year, Month, Day}, {Hour, Min, Sec}} = erlang:universaltime(),
     {_, _, Us} = now(),
     lists:flatten(io_lib:format(
-                    "~4.10.0B-~2.10.0B-~2.10.0BT~2.10.0B:~2.10.0B:~2.10.0B.~pZ",
+                    "~4.10.0B-~2.10.0B-~2.10.0B"
+                    "T~2.10.0B:~2.10.0B:~2.10.0B.~6.10.0BZ",
                     [Year, Month, Day, Hour, Min, Sec, Us])).
