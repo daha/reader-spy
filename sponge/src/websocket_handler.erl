@@ -5,8 +5,6 @@
 %%%
 %%% @end
 %%%-------------------------------------------------------------------
-%%% @todo Store the events on disk (disklog?)
-%%% @todo use the ip and the request as file-name
 
 -module(websocket_handler).
 
@@ -43,7 +41,6 @@ websocket_init(_Any, Req, []) ->
     {ok, Req, #state{io_device = IoDevice}, hibernate}.
 
 websocket_handle({text, JsonStr}, Req, State) ->
-    io:format("~p~n", [JsonStr]),
     ok = file:write(State#state.io_device, [JsonStr, "\n"] ),
     {ok, Req, State};
 websocket_handle(_Any, Req, State) ->
