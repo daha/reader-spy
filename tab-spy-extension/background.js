@@ -1,5 +1,5 @@
 //====================================================================
-// Copyright (c) 2011, David Haglund
+// Copyright (c) 2011-2012, David Haglund
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -33,8 +33,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //====================================================================
+/*globals chrome,localStorage,WebSocket,console,setTimeout */
 
 (function () {
+    'use strict';
     var ws, connected = false, backoff = 1000;
 
     if (!localStorage.queue) {
@@ -50,7 +52,8 @@
         queue.push(event);
         chrome.browserAction.setBadgeText(
             {"text":
-             queue.length < 10000 ? queue.length.toString() : "9999"});
+                queue.length < 10000 ? queue.length.toString() : "9999"}
+        );
         localStorage.queue = JSON.stringify(queue);
     }
 
