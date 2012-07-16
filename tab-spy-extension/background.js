@@ -107,6 +107,9 @@
                      "url": tab.url,
                      "active": tab.active,
                      "time": new Date()};
+        if (tab.hasOwnProperty('openerTabId')) {
+            event.openerTabId = tab.openerTabId;
+        }
         addEvent(event);
     }
 
